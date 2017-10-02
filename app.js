@@ -3,10 +3,10 @@ const bodyParser = require('body-parser');
 const app = express();
 const mongodb = require('mongodb');
 const MongoClient = mongodb.MongoClient;
-const mongoURL = 'mongodb://databaseeditor:letsedit@ds139904.mlab.com:39904/memorygamedb';
+const mongoURL = 'mongodb://databaseeditor:letsedit@ds139904.mlab.com:57971/questionbox';
 const mongoose = require('mongoose');
 mongoose.Promise = require('bluebird');
-mongoose.connect('mongodb://databaseeditor:letsedit@ds139904.mlab.com:39904/memorygamedb');
+mongoose.connect('mongodb://databaseeditor:letsedit@ds139904.mlab.com:57971/questionbox');
 //Db.prototype.authenticate method will no longer be available in the next major release 3.x as MongoDB 3.6 will only allow auth against users in the admin db and will no longer allow multiple credentials on a socket. Please authenticate using MongoClient.connect with auth credentials.
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -35,3 +35,31 @@ MongoClient.connect(mongoURL, function(err, db) {
   }
   db.close();
 });
+
+/*
+Prefix Verb   URI Pattern              Controller#Action
+questions GET    /questions(.:format)     questions#index
+          POST   /questions(.:format)     questions#create
+ question GET    /questions/:id(.:format) questions#show
+          PATCH  /questions/:id(.:format) questions#update
+          PUT    /questions/:id(.:format) questions#update
+          DELETE /questions/:id(.:format) questions#destroy
+  answers GET    /answers(.:format)       answers#index
+          POST   /answers(.:format)       answers#create
+   answer GET    /answers/:id(.:format)   answers#show
+          PATCH  /answers/:id(.:format)   answers#update
+          PUT    /answers/:id(.:format)   answers#update
+          DELETE /answers/:id(.:format)   answers#destroy
+question_answers GET    /questions/:question_id/answers(.:format)     answers#index
+                 POST   /questions/:question_id/answers(.:format)     answers#create
+ question_answer GET    /questions/:question_id/answers/:id(.:format) answers#show
+                 PATCH  /questions/:question_id/answers/:id(.:format) answers#update
+                 PUT    /questions/:question_id/answers/:id(.:format) answers#update
+                 DELETE /questions/:question_id/answers/:id(.:format) answers#destroy
+       questions GET    /questions(.:format)                          questions#index
+                 POST   /questions(.:format)                          questions#create
+        question GET    /questions/:id(.:format)                      questions#show
+                 PATCH  /questions/:id(.:format)                      questions#update
+                 PUT    /questions/:id(.:format)                      questions#update
+                 DELETE /questions/:id(.:format)                      questions#destroy
+                 /*

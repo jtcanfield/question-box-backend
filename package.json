@@ -1,7 +1,7 @@
 {
-  "name": "memorygameapi",
+  "name": "question-box-backend",
   "version": "1.0.0",
-  "description": "API for memory game",
+  "description": "API for Question Box",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -12,7 +12,7 @@
   },
   "author": "jtdude100",
   "license": "ISC",
-  "homepage": "https://github.com/jtcanfield/memorygameapi",
+  "homepage": "https://github.com/jtcanfield/question-box-backend",
   "dependencies": {
     "body-parser": "^1.17.2",
     "express": "^4.15.4",
