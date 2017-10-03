@@ -1,7 +1,10 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcryptjs');//Not in use
+const passport = require('passport');//Not in use
+const LocalStrategy = require('passport-local').Strategy;//Not in use
+const expressValidator = require('express-validator');
 const models = require("./models");
 const QuestionModel = models.Question;
 const mongodb = require('mongodb');
@@ -26,6 +29,59 @@ app.get("/test", function (req, res, next) {console.log("GET FIRED"); console.lo
 app.post("/test", function (req, res, next) {console.log("POST FIRED"); console.log(req.body); res.json(req.body);});
 app.del("/test", function (req, res, next) {console.log("DEL FIRED"); console.log(req.body); res.json(req.body);});
 app.patch("/test", function (req, res, next) {console.log("PATCH FIRED"); console.log(req.body); res.json(req.body);});
+
+
+passport.use(new LocalStrategy(
+    function(username, password, done) {
+        User.authenticate(username, password, function(err, user) {
+          //HERE, USER is the entire user object
+            if (err) {
+                return done(err)
+            }
+            if (user) {
+                return done(null, user)
+            } else {
+                return done(null, false, {
+                    message: "There is no user with that username and password."
+                })
+            }
+        })
+    }
+));
+passport.serializeUser(function(userobj, done) {
+  //HERE, USER is the entire user object
+    done(null, userobj.id);//Returns the randomized ID, sends to deserializeUser
+});
+passport.deserializeUser(function(id, done) {
+  //Gets the ID from the serializeUser
+    User.findById(id, function(err, userobj) {
+      //finds that user object by its ID
+        done(err, userobj);//FIND OUT WHERE THIS RETURNS TO
+    });
+});
+app.use(passport.initialize());
+app.use(passport.session());
+
+
+
+app.post("/register", function (req, res, next) {
+  const question = new QuestionModel({
+            title: req.body.title,
+            language: req.body.language,
+            question: req.body.question,
+            tags: req.body.tags,
+            user: "user unavaiable",
+            solved: false,
+          })
+          console.log(question);
+  res.json(question);
+  // MongoClient.connect(mongoURL, function (err, db) {
+  //   const questionlisting = db.collection("questions");
+  //   questionlisting.insertOne(JSON.parse(req.params.data));
+  // })
+});
+
+
 
 app.post("/question", function (req, res, next) {
   const question = new QuestionModel({
@@ -61,17 +117,63 @@ question_answers  GET    /questions/:question_id/answers(.:format)     answers#i
                   PATCH  /questions/:question_id/answers/:id(.:format) answers#update
                   DELETE /questions/:question_id/answers/:id(.:format) answers#destroy
                  */
+app.post('/signup/', function(req, res) {
+   req.checkBody('username', 'Username must be alphanumeric').isAlphanumeric();
+   req.checkBody('username', 'Username is required').notEmpty();
+   req.checkBody('password', 'Password is required').notEmpty();
+   req.checkBody('password2', 'Type Password Again').notEmpty();
+   req.checkBody('email', 'Email is required').notEmpty();
+   req.checkBody('email', 'Invalid Email').isEmail();
+   req.checkBody('password', 'Passwords do not match').equals(req.body.password2);
+   req.getValidationResult()
+       .then(function(result) {
+           if (!result.isEmpty()) {
+               return res.render("signup", {
+                   username: req.body.username,
+                   errors: result.mapped()
+               });
+           }
+           const user = new User({
+               username: req.body.username,
+               password: req.body.password,
+               email: req.body.email
+           })
+           const error = user.validateSync();
+           if (error) {
+               return res.render("signup", {
+                   errors: normalizeMongooseErrors(error.errors)
+               })
+           }
+           user.save(function(err) {
+               if (err) {
+                   return res.render("signup", {
+                       messages: {
+                           error: ["That username is already taken."]
+                       }
+                   })
+               }
+               return res.redirect('/');
+           })
+       })
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*
-
-
-
-
-
-
-
-
-
-
 app.get("/:dynamicsolo", function (req, res) {
  MongoClient.connect(mongoURL, function (err, db) {
    const statsdb = db.collection("statistics");

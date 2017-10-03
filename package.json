@@ -19,8 +19,11 @@
     "body-parser": "^1.18.2",
     "express": "^4.16.1",
     "express-session": "^1.15.5",
+    "express-validator": "^4.2.1",
     "mongodb": "^2.2.31",
-    "mongoose": "^4.12.0"
+    "mongoose": "^4.12.0",
+    "passport": "^0.4.0",
+    "passport-local": "^1.0.0"
   },
   "devDependencies": {}
 }
