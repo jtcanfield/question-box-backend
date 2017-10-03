@@ -20,7 +20,9 @@ app.use(function(req, res, next) {
   next();
 });
 app.post("/test", upload.array(), function (req, res, next) {
+  console.log(req.headers);
   console.log(req.body);
+  res.json(req.body);
 });
 app.post("/stats/:data", function (req, res) {
   MongoClient.connect(mongoURL, function (err, db) {
