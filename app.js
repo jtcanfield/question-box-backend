@@ -67,59 +67,62 @@ passport.deserializeUser(function(id, done) {
 app.use(passport.initialize());
 app.use(passport.session());
 
+// const requireLogin = function (req, res, next) {
+//   UserModel.findOne({ 'name.last': 'Ghost' }, 'name occupation', function (err, person) {
+//   if (err) return handleError(err);
+//
+//   })
+// }
 
 
 app.post('/register', function(req, res) {
-    req.checkBody('username', 'Username must be alphanumeric').isAlphanumeric();
-    req.checkBody('username', 'Username is required').notEmpty();
-    req.checkBody('username', 'Username must be at least 4 characters').isLength({ min: 4 });
-    req.checkBody('name', 'Name must be at least 2 characters').isLength({ min: 2 });
-    req.checkBody('password', 'Password is required').notEmpty();
-    req.checkBody('password', 'Password must be at least 4 characters').isLength({ min: 4 });
-    req.checkBody('password2', 'Type Password Again').notEmpty();
-    req.checkBody('email', 'Email is required').notEmpty();
-    req.checkBody('email', 'Email must be at least 5 characters').isLength({ min: 5 });
-    req.checkBody('email', 'Invalid Email').isEmail();
-    req.checkBody('password', 'Passwords do not match').equals(req.body.password2);
-    req.getValidationResult()
-        .then(function(result) {
-          const user = new UserModel({
-              username: req.body.username,
-              usernamevalidation: req.body.username.toLowerCase(),
-              name: req.body.name,
-              password: req.body.password2,
-              email: req.body.email,
-              sessionID: req.sessionID
-          })
-            if (!result.isEmpty()) {
-              console.log(result.mapped());
-              return res.status(400).send(result.mapped());
-            } else {
-              MongoClient.connect(mongoURL, function (err, db) {
-                const userlist = db.collection("users");
-                userlist.find({ usernamevalidation: { $eq: req.body.username.toLowerCase() } }).toArray(function (err, docs) {
-                  if (docs[0] !== undefined){
-                    return res.status(400).send("That username already exists");
-                  } else {
-                    userlist.find({ email: { $eq: req.body.email } }).toArray(function (err, docs) {
-                      if (docs[0] !== undefined){
-                        return res.status(400).send("That email already exists");
-                      } else {
-                        user.save(function(err) {
-                            if (err) {
-                                return res.status(500).send("Internal Server Error");
-                            } else {
-                                return res.status(201).send(req.sessionID);
-                            }
-                        })
-                      }
-                    })
-                  }
-                })
+  req.checkBody('username', 'Username must be alphanumeric').isAlphanumeric();
+  req.checkBody('username', 'Username is required').notEmpty();
+  req.checkBody('username', 'Username must be at least 4 characters').isLength({ min: 4 });
+  req.checkBody('name', 'Name must be at least 2 characters').isLength({ min: 2 });
+  req.checkBody('password', 'Password is required').notEmpty();
+  req.checkBody('password', 'Password must be at least 4 characters').isLength({ min: 4 });
+  req.checkBody('password2', 'Type Password Again').notEmpty();
+  req.checkBody('email', 'Email is required').notEmpty();
+  req.checkBody('email', 'Email must be at least 5 characters').isLength({ min: 5 });
+  req.checkBody('email', 'Invalid Email').isEmail();
+  req.checkBody('password', 'Passwords do not match').equals(req.body.password2);
+  req.getValidationResult()
+      .then(function(result) {
+        const user = new UserModel({
+            username: req.body.username,
+            usernamevalidation: req.body.username.toLowerCase(),
+            name: req.body.name,
+            password: req.body.password2,
+            email: req.body.email,
+            sessionID: req.sessionID })
+          if (!result.isEmpty()) {
+            return res.status(400).send(result.array()[0].msg);
+          } else {
+            MongoClient.connect(mongoURL, function (err, db) {
+              const userlist = db.collection("users");
+              userlist.find({ usernamevalidation: { $eq: req.body.username.toLowerCase() } }).toArray(function (err, docs) {
+                if (docs[0] !== undefined){
+                  return res.status(400).send("That username already exists");
+                } else {
+                  userlist.find({ email: { $eq: req.body.email } }).toArray(function (err, docs) {
+                    if (docs[0] !== undefined){
+                      return res.status(400).send("That email already exists");
+                    } else {
+                      user.save(function(err) {
+                          if (err) {
+                              return res.status(500).send("Internal Server Error");
+                          } else {
+                              return res.status(201).send(req.sessionID);
+                          }
+                      })
+                    }
+                  })
+                }
               })
-            }
-            console.log("NOTHING WAS RETURNED, SERVER ERROR");
-        })
+            })
+          }
+      })
 });
 app.post('/login', function(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
