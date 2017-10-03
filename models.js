@@ -65,7 +65,7 @@ const questionSchema = new mongoose.Schema({
         required: true
     },
     tags: {
-        type: String
+        type: Array
     },
     user: {
         type: String,
@@ -74,9 +74,9 @@ const questionSchema = new mongoose.Schema({
     solved: {
         type: Boolean,
         required: true
-    },
+    }
 },{timestamps: true});
-const Question = mongoose.model('Question', snippetSchema);
+const Question = mongoose.model('Question', questionSchema);
 
 module.exports = {
     Question: Question
