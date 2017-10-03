@@ -97,25 +97,25 @@ app.post('/register', function(req, res) {
             // const error = user.validateSync();
             // if (error) {
             //   console.log(error);
-            //   return res.json(error);
+            //   return res.send(error);
             // }
             // console.log(user);
             MongoClient.connect(mongoURL, function (err, db) {
               const userlist = db.collection("users");
               userlist.find({ usernamevalidation: { $eq: req.body.username.toLowerCase() } }).toArray(function (err, docs) {
                 if (docs[0] !== undefined){
-                  return res.json("That username already exists");
+                  return res.send("That username already exists");
                 }
               })
               userlist.find({ email: { $eq: req.body.email } }).toArray(function (err, docs) {
                 if (docs[0] !== undefined){
-                  return res.json("That email already exists");
+                  return res.send("That email already exists");
                 } else {
                   user.save(function(err) {
                       if (err) {
-                          return res.json("Internal Server Error");
+                          return res.send("Internal Server Error");
                       } else {
-                          return res.json(false);
+                          return res.send(false);
                       }
                   })
                 }
@@ -126,16 +126,14 @@ app.post('/register', function(req, res) {
 });
 app.post('/login', function(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
-    if (err) {   return res.json(info.message)}
-    if (!user) { return res.json(info.message)}
+    if (err) {   return res.status(401).send(info.message)}
+    if (!user) { return res.status(401).send(info.message)}
     MongoClient.connect(mongoURL, function (err, db) {
-      console.log(req.sessionID);
-      console.log(user.username);
       const users = db.collection("users");
-      // users.updateOne({username:{$eq: user.username}}, {$set: {sessionID:req.sessionID}}, function (err, docs) {
+      users.updateOne({usernamevalidation:{$eq: user.username}}, {$set: {sessionID:req.sessionID}}, function (err, docs) {
+        return res.status(201).send(req.sessionID);
+      })
       // req.logIn(user, function() {});//NEEDS TO BE USED IN ORDER TO USE REQ.USER
-      // return res.redirect('/');
-      // })
     })
   })(req, res, next);
 });
