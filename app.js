@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');//Not in use
 const passport = require('passport');//Not in use
 const LocalStrategy = require('passport-local').Strategy;//Not in use
 const expressValidator = require('express-validator');
+const session = require('express-session');
 const models = require("./models");
 const QuestionModel = models.Question;
 const UserModel = models.User;
@@ -14,6 +15,7 @@ const mongoURL = 'mongodb://databaseeditor:letsedit@ds157971.mlab.com:57971/ques
 const mongoose = require('mongoose');
 mongoose.Promise = require('bluebird');
 mongoose.connect('mongodb://databaseeditor:letsedit@ds157971.mlab.com:57971/questionbox');
+app.use(session({ secret: 'this-is-a-secret-token', cookie: { maxAge: 3600000, httpOnly: false}}));
 //Db.prototype.authenticate method will no longer be available in the next major release 3.x as MongoDB 3.6 will only allow auth against users in the admin db and will no longer allow multiple credentials on a socket. Please authenticate using MongoClient.connect with auth credentials.
 
 app.use(bodyParser.json());
@@ -36,10 +38,10 @@ app.patch("/test", function (req, res, next) {console.log("PATCH FIRED"); consol
 
 passport.use(new LocalStrategy(
     function(username, password, done) {
-        User.authenticate(username, password, function(err, user) {
+        UserModel.authenticate(username, password, function(err, user) {
           //HERE, USER is the entire user object
             if (err) {
-                return done(err)
+              return done(err)
             }
             if (user) {
                 return done(null, user)
@@ -83,7 +85,7 @@ app.post('/register', function(req, res) {
         .then(function(result) {
             if (!result.isEmpty()) {
               console.log(result.mapped());
-                return res.json(result.mapped());
+              return res.json(result.mapped());
             }
             const user = new UserModel({
                 username: req.body.username,
@@ -92,11 +94,11 @@ app.post('/register', function(req, res) {
                 password: req.body.password2,
                 email: req.body.email
             })
-            const error = user.validateSync();
-            if (error) {
-              console.log(error);
-              return res.json(error);
-            }
+            // const error = user.validateSync();
+            // if (error) {
+            //   console.log(error);
+            //   return res.json(error);
+            // }
             // console.log(user);
             MongoClient.connect(mongoURL, function (err, db) {
               const userlist = db.collection("users");
@@ -122,7 +124,21 @@ app.post('/register', function(req, res) {
             console.log("NOTHING WAS RETURNED, SERVER ERROR");
         })
 });
-
+app.post('/login', function(req, res, next) {
+  passport.authenticate('local', function(err, user, info) {
+    if (err) {   return res.json(info.message)}
+    if (!user) { return res.json(info.message)}
+    MongoClient.connect(mongoURL, function (err, db) {
+      console.log(req.sessionID);
+      console.log(user.username);
+      const users = db.collection("users");
+      // users.updateOne({username:{$eq: user.username}}, {$set: {sessionID:req.sessionID}}, function (err, docs) {
+      // req.logIn(user, function() {});//NEEDS TO BE USED IN ORDER TO USE REQ.USER
+      // return res.redirect('/');
+      // })
+    })
+  })(req, res, next);
+});
 
 
 app.post("/question", function (req, res, next) {
