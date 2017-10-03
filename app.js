@@ -83,44 +83,41 @@ app.post('/register', function(req, res) {
     req.checkBody('password', 'Passwords do not match').equals(req.body.password2);
     req.getValidationResult()
         .then(function(result) {
+          const user = new UserModel({
+              username: req.body.username,
+              usernamevalidation: req.body.username.toLowerCase(),
+              name: req.body.name,
+              password: req.body.password2,
+              email: req.body.email,
+              sessionID: req.sessionID
+          })
             if (!result.isEmpty()) {
               console.log(result.mapped());
-              return res.json(result.mapped());
-            }
-            const user = new UserModel({
-                username: req.body.username,
-                usernamevalidation: req.body.username.toLowerCase(),
-                name: req.body.name,
-                password: req.body.password2,
-                email: req.body.email
-            })
-            // const error = user.validateSync();
-            // if (error) {
-            //   console.log(error);
-            //   return res.send(error);
-            // }
-            // console.log(user);
-            MongoClient.connect(mongoURL, function (err, db) {
-              const userlist = db.collection("users");
-              userlist.find({ usernamevalidation: { $eq: req.body.username.toLowerCase() } }).toArray(function (err, docs) {
-                if (docs[0] !== undefined){
-                  return res.send("That username already exists");
-                }
-              })
-              userlist.find({ email: { $eq: req.body.email } }).toArray(function (err, docs) {
-                if (docs[0] !== undefined){
-                  return res.send("That email already exists");
-                } else {
-                  user.save(function(err) {
-                      if (err) {
-                          return res.send("Internal Server Error");
+              return res.status(400).send(result.mapped());
+            } else {
+              MongoClient.connect(mongoURL, function (err, db) {
+                const userlist = db.collection("users");
+                userlist.find({ usernamevalidation: { $eq: req.body.username.toLowerCase() } }).toArray(function (err, docs) {
+                  if (docs[0] !== undefined){
+                    return res.status(400).send("That username already exists");
+                  } else {
+                    userlist.find({ email: { $eq: req.body.email } }).toArray(function (err, docs) {
+                      if (docs[0] !== undefined){
+                        return res.status(400).send("That email already exists");
                       } else {
-                          return res.send(false);
+                        user.save(function(err) {
+                            if (err) {
+                                return res.status(500).send("Internal Server Error");
+                            } else {
+                                return res.status(201).send(req.sessionID);
+                            }
+                        })
                       }
-                  })
-                }
+                    })
+                  }
+                })
               })
-            })
+            }
             console.log("NOTHING WAS RETURNED, SERVER ERROR");
         })
 });
