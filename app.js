@@ -109,20 +109,17 @@ app.post('/register', function(req, res) {
                 if (docs[0] !== undefined){
                   return res.json("That email already exists");
                 } else {
-                  return res.json("Well it passes");
+                  user.save(function(err) {
+                      if (err) {
+                          return res.json("Internal Server Error");
+                      } else {
+                          return res.json(false);
+                      }
+                  })
                 }
               })
             })
-            // user.save(function(err) {
-                // if (err) {
-                //     console.log(err);
-                //     console.log("username already exists");
-                //     return res.json(err);
-                // } else {
-                //     return res.json(false);
-                // }
-            // })
-            // console.log("NOTHING WAS RETURNED, SERVER ERROR");
+            console.log("NOTHING WAS RETURNED, SERVER ERROR");
         })
 });
 
