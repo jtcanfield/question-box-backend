@@ -1,8 +1,8 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
-const multer = require('multer');
-const upload = multer();
+// const multer = require('multer');
+// const upload = multer();
 const mongodb = require('mongodb');
 const MongoClient = mongodb.MongoClient;
 const mongoURL = 'mongodb://databaseeditor:letsedit@ds157971.mlab.com:57971/questionbox';
@@ -19,11 +19,13 @@ app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
-app.post("/test", upload.array(), function (req, res, next) {
+app.post("/test", function (req, res, next) {
   console.log(req.headers);
   console.log(req.body);
   res.json(req.body);
 });
+
+
 app.post("/stats/:data", function (req, res) {
   MongoClient.connect(mongoURL, function (err, db) {
     const statsdb = db.collection("questions");
