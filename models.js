@@ -8,6 +8,15 @@ const userSchema = new mongoose.Schema({
         lowercase: true,
         required: true
     },
+    usernamevalidation: {
+        type: String,
+        unique: true,
+        lowercase: true,
+        required: true
+    },
+    name: {
+        type: String
+    },
     email: {
         type: String,
         lowercase: true,

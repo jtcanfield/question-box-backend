@@ -70,45 +70,42 @@ app.use(passport.session());
 app.post('/register', function(req, res) {
     req.checkBody('username', 'Username must be alphanumeric').isAlphanumeric();
     req.checkBody('username', 'Username is required').notEmpty();
+    req.checkBody('username', 'Username must be at least 4 characters').isLength({ min: 4 });
+    req.checkBody('name', 'Name must be at least 2 characters').isLength({ min: 2 });
     req.checkBody('password', 'Password is required').notEmpty();
+    req.checkBody('password', 'Password must be at least 4 characters').isLength({ min: 4 });
     req.checkBody('password2', 'Type Password Again').notEmpty();
     req.checkBody('email', 'Email is required').notEmpty();
+    req.checkBody('email', 'Email must be at least 5 characters').isLength({ min: 5 });
     req.checkBody('email', 'Invalid Email').isEmail();
     req.checkBody('password', 'Passwords do not match').equals(req.body.password2);
     req.getValidationResult()
         .then(function(result) {
             if (!result.isEmpty()) {
               console.log(result.mapped());
-                // return res.render("signup", {
-                //     username: req.body.username,
-                //     errors: result.mapped()
-                // });
-                return res.json("NOOOOOPE");
+                return res.json(result.mapped());
             }
             const user = new UserModel({
                 username: req.body.username,
+                usernamevalidation: req.body.username.toLowerCase(),
                 name: req.body.name,
                 password: req.body.password2,
                 email: req.body.email
             })
             const error = user.validateSync();
             if (error) {
-                return res.render("signup", {
-                    errors: normalizeMongooseErrors(error.errors)
-                })
+              console.log(error);
             }
             console.log(user);
-            // user.save(function(err) {
-            //     if (err) {
-            //         return res.render("signup", {
-            //             messages: {
-            //                 error: ["That username is already taken."]
-            //             }
-            //         })
-            //     }
-            //     return res.redirect('/');
-            // })
-            res.json("got it");
+            user.save(function(err) {
+                if (err) {
+                    console.log(err);
+                    console.log("username already exists");
+                    return res.json(err);
+                }
+                return res.json(false);
+            })
+            return
         })
 });
 
