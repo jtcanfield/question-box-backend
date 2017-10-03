@@ -19,8 +19,7 @@
     "express": "^4.16.1",
     "express-session": "^1.15.5",
     "mongodb": "^2.2.31",
-    "mongoose": "^4.12.0",
-    "multer": "^1.3.0"
+    "mongoose": "^4.12.0"
   },
   "devDependencies": {}
 }
