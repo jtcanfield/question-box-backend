@@ -3,6 +3,7 @@ const app = express();
 const bodyParser = require('body-parser');
 const bcrypt = require('bcryptjs');
 const models = require("./models");
+const QuestionModel = models.Question;
 const mongodb = require('mongodb');
 const MongoClient = mongodb.MongoClient;
 const mongoURL = 'mongodb://databaseeditor:letsedit@ds157971.mlab.com:57971/questionbox';
@@ -27,12 +28,21 @@ app.del("/test", function (req, res, next) {console.log("DEL FIRED"); console.lo
 app.patch("/test", function (req, res, next) {console.log("PATCH FIRED"); console.log(req.body); res.json(req.body);});
 
 app.post("/test", function (req, res, next) {
-  console.log(JSON.stringify(req.body));
-  res.json(req.body);
-  MongoClient.connect(mongoURL, function (err, db) {
-    const questionlisting = db.collection("questions");
-    questionlisting.insertOne(JSON.parse(req.params.data));
-  })
+  const question = new QuestionModel({
+            title: req.body.title,
+            language: req.body.language,
+            question: req.body.question,
+            tags: req.body.tags,
+            // tags: req.body.tags.split(","),
+            user: "user unavaiable",
+            solved: false,
+          })
+          console.log(question);
+  res.json(question);
+  // MongoClient.connect(mongoURL, function (err, db) {
+  //   const questionlisting = db.collection("questions");
+  //   questionlisting.insertOne(JSON.parse(req.params.data));
+  // })
 });
 /*
         Prefix Verb   URI Pattern              Controller#Action

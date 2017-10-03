@@ -56,17 +56,25 @@ const questionSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    codesnippet: {
-        type: String,
-        required: true
-    },
-    notes: {
-        type: String
-    },
     language: {
         type: String,
         required: true
-    }
+    },
+    question: {
+        type: String,
+        required: true
+    },
+    tags: {
+        type: String
+    },
+    user: {
+        type: String,
+        required: true
+    },
+    solved: {
+        type: Boolean,
+        required: true
+    },
 },{timestamps: true});
 const Question = mongoose.model('Question', snippetSchema);
 
