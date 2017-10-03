@@ -95,17 +95,34 @@ app.post('/register', function(req, res) {
             const error = user.validateSync();
             if (error) {
               console.log(error);
+              return res.json(error);
             }
-            console.log(user);
-            user.save(function(err) {
-                if (err) {
-                    console.log(err);
-                    console.log("username already exists");
-                    return res.json(err);
+            // console.log(user);
+            MongoClient.connect(mongoURL, function (err, db) {
+              const userlist = db.collection("users");
+              userlist.find({ usernamevalidation: { $eq: req.body.username.toLowerCase() } }).toArray(function (err, docs) {
+                if (docs[0] !== undefined){
+                  return res.json("That username already exists");
                 }
-                return res.json(false);
+              })
+              userlist.find({ email: { $eq: req.body.email } }).toArray(function (err, docs) {
+                if (docs[0] !== undefined){
+                  return res.json("That email already exists");
+                } else {
+                  return res.json("Well it passes");
+                }
+              })
             })
-            return
+            // user.save(function(err) {
+                // if (err) {
+                //     console.log(err);
+                //     console.log("username already exists");
+                //     return res.json(err);
+                // } else {
+                //     return res.json(false);
+                // }
+            // })
+            // console.log("NOTHING WAS RETURNED, SERVER ERROR");
         })
 });
 
