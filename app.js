@@ -1,8 +1,8 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
-// const multer = require('multer');
-// const upload = multer();
+const bcrypt = require('bcryptjs');
+const models = require("./models");
 const mongodb = require('mongodb');
 const MongoClient = mongodb.MongoClient;
 const mongoURL = 'mongodb://databaseeditor:letsedit@ds157971.mlab.com:57971/questionbox';
@@ -22,11 +22,18 @@ app.use(function(req, res, next) {
 });
 
 app.get("/test", function (req, res, next) {console.log("GET FIRED"); console.log(req.body); res.json(req.body);});
-app.post("/test", function (req, res, next) {console.log("POST FIRED"); console.log(req.body); res.json(req.body);});
+// app.post("/test", function (req, res, next) {console.log("POST FIRED"); console.log(req.body); res.json(req.body);});
 app.del("/test", function (req, res, next) {console.log("DEL FIRED"); console.log(req.body); res.json(req.body);});
 app.patch("/test", function (req, res, next) {console.log("PATCH FIRED"); console.log(req.body); res.json(req.body);});
 
-
+app.post("/test", function (req, res, next) {
+  console.log(JSON.stringify(req.body));
+  res.json(req.body);
+  MongoClient.connect(mongoURL, function (err, db) {
+    const questionlisting = db.collection("questions");
+    questionlisting.insertOne(JSON.parse(req.params.data));
+  })
+});
 /*
         Prefix Verb   URI Pattern              Controller#Action
         questions GET    /questions(.:format)     questions#index
