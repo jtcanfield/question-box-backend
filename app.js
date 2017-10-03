@@ -23,17 +23,16 @@ app.use(function(req, res, next) {
 });
 
 app.get("/test", function (req, res, next) {console.log("GET FIRED"); console.log(req.body); res.json(req.body);});
-// app.post("/test", function (req, res, next) {console.log("POST FIRED"); console.log(req.body); res.json(req.body);});
+app.post("/test", function (req, res, next) {console.log("POST FIRED"); console.log(req.body); res.json(req.body);});
 app.del("/test", function (req, res, next) {console.log("DEL FIRED"); console.log(req.body); res.json(req.body);});
 app.patch("/test", function (req, res, next) {console.log("PATCH FIRED"); console.log(req.body); res.json(req.body);});
 
-app.post("/test", function (req, res, next) {
+app.post("/question", function (req, res, next) {
   const question = new QuestionModel({
             title: req.body.title,
             language: req.body.language,
             question: req.body.question,
             tags: req.body.tags,
-            // tags: req.body.tags.split(","),
             user: "user unavaiable",
             solved: false,
           })
@@ -63,6 +62,16 @@ question_answers  GET    /questions/:question_id/answers(.:format)     answers#i
                   DELETE /questions/:question_id/answers/:id(.:format) answers#destroy
                  */
 /*
+
+
+
+
+
+
+
+
+
+
 app.get("/:dynamicsolo", function (req, res) {
  MongoClient.connect(mongoURL, function (err, db) {
    const statsdb = db.collection("statistics");
