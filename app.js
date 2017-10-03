@@ -13,34 +13,18 @@ mongoose.connect('mongodb://databaseeditor:letsedit@ds157971.mlab.com:57971/ques
 
 // app.use(express.bodyParser());
 app.use(bodyParser.json());
-
 app.use(function(req, res, next) {
   // res.header("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE')
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
-app.get("/test", function (req, res, next) {
-  console.log("GET FIRED");
-  console.log(req.body);
-  res.json(req.body);
-});
-app.post("/test", function (req, res, next) {
-  console.log("POST FIRED");
-  console.log(req.body);
-  res.json(req.body);
-});
-app.del("/test", function (req, res, next) {
-  console.log("DEL FIRED");
-  console.log(req.body);
-  res.json(req.body);
-});
-app.patch("/test", function (req, res, next) {
-  console.log("PATCH FIRED");
-  console.log(req.body);
-  res.json(req.body);
-});
+
+app.get("/test", function (req, res, next) {console.log("GET FIRED"); console.log(req.body); res.json(req.body);});
+app.post("/test", function (req, res, next) {console.log("POST FIRED"); console.log(req.body); res.json(req.body);});
+app.del("/test", function (req, res, next) {console.log("DEL FIRED"); console.log(req.body); res.json(req.body);});
+app.patch("/test", function (req, res, next) {console.log("PATCH FIRED"); console.log(req.body); res.json(req.body);});
 
 
 /*
