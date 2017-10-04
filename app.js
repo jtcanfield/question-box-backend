@@ -23,10 +23,13 @@ app.use(bodyParser.json());
 // app.use(bodyParser.text());
 app.use(expressValidator());
 app.use(function(req, res, next) {
-  // res.header("Access-Control-Allow-Origin", "*");
+  if (req.headers.authorization !== undefined){
+    req.sessionID = req.headers.authorization;
+  }
   res.setHeader("Access-Control-Allow-Origin", "*");
+  // res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE')
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  res.header("Access-Control-Allow-Headers", "Origin, Authorization, X-Requested-With, Content-Type, Accept");
   next();
 });
 
@@ -68,12 +71,20 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // const requireLogin = function (req, res, next) {
-//   UserModel.findOne({ 'name.last': 'Ghost' }, 'name occupation', function (err, person) {
-//   if (err) return handleError(err);
-//
-//   })
+  // UserModel.findOne({ sessionID: 'Ghost' }, 'name occupation', function (err, person) {
+  // console.log(err);
+  //
+  // })
 // }
-
+app.post('/checklogin', function(req, res, next) {
+  UserModel.findOne({ sessionID: req.sessionID }, function (err, person) {
+    if (person){
+      return res.status(200).send();
+    } else {
+      return res.status(401).send();
+    }
+  })
+});
 
 app.post('/register', function(req, res) {
   req.checkBody('username', 'Username must be alphanumeric').isAlphanumeric();
