@@ -15,15 +15,16 @@ const mongoURL = 'mongodb://databaseeditor:letsedit@ds157971.mlab.com:57971/ques
 const mongoose = require('mongoose');
 mongoose.Promise = require('bluebird');
 mongoose.connect('mongodb://databaseeditor:letsedit@ds157971.mlab.com:57971/questionbox');
-app.use(session({ secret: 'this-is-a-secret-token', cookie: { maxAge: 3600000, httpOnly: false}}));
 //Db.prototype.authenticate method will no longer be available in the next major release 3.x as MongoDB 3.6 will only allow auth against users in the admin db and will no longer allow multiple credentials on a socket. Please authenticate using MongoClient.connect with auth credentials.
-
+app.use(session({ secret: 'this-is-a-secret-token', cookie: { maxAge: 1000, httpOnly: false}}));
 app.use(bodyParser.json());
 // app.use(bodyParser.urlencoded({ extended: false }));
 // app.use(bodyParser.text());
 app.use(expressValidator());
 app.use(function(req, res, next) {
+  console.log(req);
   if (req.headers.authorization !== undefined){
+    req.session.destroy();
     req.sessionID = req.headers.authorization;
   }
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -72,8 +73,7 @@ app.use(passport.session());
 
 // const requireLogin = function (req, res, next) {
   // UserModel.findOne({ sessionID: 'Ghost' }, 'name occupation', function (err, person) {
-  // console.log(err);
-  //
+
   // })
 // }
 app.post('/checklogin', function(req, res, next) {
@@ -99,41 +99,41 @@ app.post('/register', function(req, res) {
   req.checkBody('email', 'Invalid Email').isEmail();
   req.checkBody('password', 'Passwords do not match').equals(req.body.password2);
   req.getValidationResult()
-      .then(function(result) {
-        const user = new UserModel({
-            username: req.body.username,
-            usernamevalidation: req.body.username.toLowerCase(),
-            name: req.body.name,
-            password: req.body.password2,
-            email: req.body.email,
-            sessionID: req.sessionID })
-          if (!result.isEmpty()) {
-            return res.status(400).send(result.array()[0].msg);
+  .then(function(result) {
+    const user = new UserModel({
+        username: req.body.username,
+        usernamevalidation: req.body.username.toLowerCase(),
+        name: req.body.name,
+        password: req.body.password2,
+        email: req.body.email,
+        sessionID: req.sessionID })
+    if (!result.isEmpty()) {
+      return res.status(400).send(result.array()[0].msg);
+    } else {
+      MongoClient.connect(mongoURL, function (err, db) {
+        const userlist = db.collection("users");
+        userlist.find({ usernamevalidation: { $eq: req.body.username.toLowerCase() } }).toArray(function (err, docs) {
+          if (docs[0] !== undefined){
+            return res.status(400).send("That username already exists");
           } else {
-            MongoClient.connect(mongoURL, function (err, db) {
-              const userlist = db.collection("users");
-              userlist.find({ usernamevalidation: { $eq: req.body.username.toLowerCase() } }).toArray(function (err, docs) {
-                if (docs[0] !== undefined){
-                  return res.status(400).send("That username already exists");
-                } else {
-                  userlist.find({ email: { $eq: req.body.email } }).toArray(function (err, docs) {
-                    if (docs[0] !== undefined){
-                      return res.status(400).send("That email already exists");
-                    } else {
-                      user.save(function(err) {
-                          if (err) {
-                              return res.status(500).send("Internal Server Error");
-                          } else {
-                              return res.status(201).send(req.sessionID);
-                          }
-                      })
-                    }
-                  })
-                }
-              })
+            userlist.find({ email: { $eq: req.body.email } }).toArray(function (err, docs) {
+              if (docs[0] !== undefined){
+                return res.status(400).send("That email already exists");
+              } else {
+                user.save(function(err) {
+                  if (err) {
+                    return res.status(500).send("Internal Server Error");
+                  } else {
+                    return res.status(201).send(req.sessionID);
+                  }
+                })
+              }
             })
           }
+        })
       })
+    }
+  })
 });
 app.post('/login', function(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
