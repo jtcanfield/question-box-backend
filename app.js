@@ -22,7 +22,6 @@ app.use(bodyParser.json());
 // app.use(bodyParser.text());
 app.use(expressValidator());
 app.use(function(req, res, next) {
-  console.log(req);
   if (req.headers.authorization !== undefined){
     req.session.destroy();
     req.sessionID = req.headers.authorization;
@@ -79,7 +78,11 @@ app.use(passport.session());
 app.post('/checklogin', function(req, res, next) {
   UserModel.findOne({ sessionID: req.sessionID }, function (err, person) {
     if (person){
-      return res.status(200).send();
+      let obj = {
+        username: person.username,
+        session: person.sessionID
+      };
+      return res.status(200).send(obj);
     } else {
       return res.status(401).send();
     }
