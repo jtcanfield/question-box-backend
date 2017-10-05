@@ -89,10 +89,12 @@ app.post('/checklogin', function(req, res, next) {
   })
 });
 app.post('/logout', function(req, res, next) {
-  UserModel.findOne({ sessionID: req.sessionID }, function (err, person) {
+  UserModel.findOne({ sessionID: req.body.sessionID }, function (err, person) {
     if (person){
       person.sessionID = '';
       person.save();
+      return res.status(200).send();
+    } else {
       return res.status(200).send();
     }
   })
