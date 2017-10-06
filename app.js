@@ -206,6 +206,11 @@ app.get('/questions', function(req, res, next) {
     res.json(questions);
   })
 });
+app.get('/question/:id', function(req, res, next) {
+  QuestionModel.findById(req.params.id, function (err, questions) {
+    res.json(questions);
+  })
+});
 /*
         Prefix Verb   URI Pattern              Controller#Action
         questions GET    /questions(.:format)     questions#index
