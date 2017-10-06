@@ -164,21 +164,40 @@ app.post('/login', function(req, res, next) {
 });
 
 
-app.post("/question", function (req, res, next) {
-  const question = new QuestionModel({
-            title: req.body.title,
-            language: req.body.language,
-            question: req.body.question,
-            tags: req.body.tags,
-            user: "user unavaiable",
-            solved: false,
-          })
-          console.log(question);
-  res.json(question);
-  // MongoClient.connect(mongoURL, function (err, db) {
-  //   const questionlisting = db.collection("questions");
-  //   questionlisting.insertOne(JSON.parse(req.params.data));
-  // })
+app.post("/questionpost", function (req, res, next) {
+  req.checkBody('title', 'Title must be alphanumeric').isAlphanumeric();
+  req.checkBody('title', 'Title is required').notEmpty();
+  req.checkBody('title', 'You Need a longer Title').isLength({ min: 4 });
+  req.checkBody('language', 'Language required').notEmpty();
+  req.checkBody('language', 'Please be descriptive with the language').isLength({ min: 2 });
+  req.checkBody('question', 'Question should not be empty').notEmpty();
+  req.checkBody('question', 'You should be more descriptive in your question').isLength({ min: 10 });
+  req.checkBody('user', 'Unauthorized').notEmpty();
+  UserModel.findOne({ sessionID: req.sessionID }, function (err, person) {
+    if (person){
+      const question = new QuestionModel({
+        title: req.body.title,
+        language: req.body.language,
+        question: req.body.question,
+        tags: req.body.tags,
+        user: req.body.user,
+        solved: false,
+      })
+      if (!result.isEmpty()) {
+        return res.status(400).send(result.array()[0].msg);
+      } else {
+        user.save(function(err) {
+          if (err) {
+            return res.status(500).send("Internal Server Error");
+          } else {
+            return res.status(201).send(req.sessionID);
+          }
+        })
+      }
+    } else {
+      return res.status(401).send();
+    }
+  })
 });
 /*
         Prefix Verb   URI Pattern              Controller#Action
