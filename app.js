@@ -173,30 +173,33 @@ app.post("/questionpost", function (req, res, next) {
   req.checkBody('question', 'Question should not be empty').notEmpty();
   req.checkBody('question', 'You should be more descriptive in your question').isLength({ min: 10 });
   req.checkBody('user', 'Unauthorized').notEmpty();
-  UserModel.findOne({ sessionID: req.sessionID }, function (err, person) {
-    if (person){
-      const question = new QuestionModel({
-        title: req.body.title,
-        language: req.body.language,
-        question: req.body.question,
-        tags: req.body.tags,
-        user: req.body.user,
-        solved: false,
-      })
-      if (!result.isEmpty()) {
-        return res.status(400).send(result.array()[0].msg);
-      } else {
-        user.save(function(err) {
-          if (err) {
-            return res.status(500).send("Internal Server Error");
-          } else {
-            return res.status(201).send(req.sessionID);
-          }
+  req.getValidationResult()
+  .then(function(result) {
+    UserModel.findOne({ sessionID: req.sessionID }, function (err, person) {
+      if (person){
+        const question = new QuestionModel({
+          title: req.body.title,
+          language: req.body.language,
+          question: req.body.question,
+          tags: req.body.tags,
+          user: req.body.user,
+          solved: false,
         })
+        if (!result.isEmpty()) {
+          return res.status(400).send(result.array()[0].msg);
+        } else {
+          question.save(function(err) {
+            if (err) {
+              return res.status(500).send("Internal Server Error");
+            } else {
+              return res.status(201).send("Posted!");
+            }
+          })
+        }
+      } else {
+        return res.status(401).send();
       }
-    } else {
-      return res.status(401).send();
-    }
+    })
   })
 });
 /*
