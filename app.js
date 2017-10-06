@@ -165,9 +165,8 @@ app.post('/login', function(req, res, next) {
 
 
 app.post("/questionpost", function (req, res, next) {
-  req.checkBody('title', 'Title must be alphanumeric').isAlphanumeric();
   req.checkBody('title', 'Title is required').notEmpty();
-  req.checkBody('title', 'You Need a longer Title').isLength({ min: 4 });
+  req.checkBody('title', 'You Need a longer Title').isLength({ min: 5 });
   req.checkBody('language', 'Language required').notEmpty();
   req.checkBody('language', 'Please be descriptive with the language').isLength({ min: 2 });
   req.checkBody('question', 'Question should not be empty').notEmpty();
@@ -192,7 +191,7 @@ app.post("/questionpost", function (req, res, next) {
             if (err) {
               return res.status(500).send("Internal Server Error");
             } else {
-              return res.status(201).send("Posted!");
+              return res.status(201).send();
             }
           })
         }
@@ -200,6 +199,11 @@ app.post("/questionpost", function (req, res, next) {
         return res.status(401).send();
       }
     })
+  })
+});
+app.get('/questions', function(req, res, next) {
+  QuestionModel.find({}, function (err, questions) {
+    res.json(questions);
   })
 });
 /*
